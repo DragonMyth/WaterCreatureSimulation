@@ -11,7 +11,7 @@
             <body name="trunk">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>5</mass>
+                    <mass>1</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -32,7 +32,7 @@
             <body name="cloacal_fin">
                 <transformation>-0.65 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>2</mass>
+                    <mass>0.1</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>

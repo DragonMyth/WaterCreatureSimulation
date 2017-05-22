@@ -11,7 +11,7 @@
             <body name="trunk">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>5</mass>
+                    <mass>0.5</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -29,10 +29,10 @@
                     </geometry>
                 </collision_shape>                                
             </body>
-            <body name="cloacal_fin">
+            <body name="caudal_fin">
                 <transformation>-0.65 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.5</mass>
+                    <mass>0.01</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -63,7 +63,7 @@
                 </axis>
 
                 <parent>trunk</parent>
-                <child>cloacal_fin</child>
+                <child>caudal_fin</child>
 
             </joint>
         </skeleton> 

@@ -1,0 +1,135 @@
+<?xml version="1.0" ?>
+<skel version="1.0">
+    <world name="world 1">
+        <physics>
+            <time_step>0.0001</time_step>
+            <gravity>0 0 0</gravity>
+            <collision_detector>dart</collision_detector>
+        </physics>
+        
+        <skeleton name="skeleton">
+            <body name="trunk">
+                <transformation>0 0 0 0 0 0</transformation>
+                <inertia>
+                    <mass>0.01</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.5 0.25 0.075</size>
+                        </box>
+                    </geometry>
+                    <color>0.95 0.15 0.15</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.5 0.25 0.075</size>
+                        </box>
+                    </geometry>
+                </collision_shape>                                
+            </body>
+            <body name="caudal_fin">
+                <transformation>-0.65 0 0 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0024</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.8 0.3 0.01</size>
+                        </box>
+                    </geometry>
+                    <color>0.15 0.15 0.95</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.8 0.3 0.01</size>
+                        </box>
+                    </geometry>
+                </collision_shape>     
+            </body>
+            <body name="pectoral_fin_1">
+                <transformation>0 0 0.138 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0008</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.01 0.2 0.2</size>
+                        </box>
+                    </geometry>
+                    <color>0.15 0.15 0.95</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.01 0.2 0.2</size>
+                        </box>
+                    </geometry>
+                </collision_shape>     
+            </body>
+            <body name="pectoral_fin_2">
+                <transformation>0 0 -0.138 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0008</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.01 0.2 0.2</size>
+                        </box>
+                    </geometry>
+                    <color>0.15 0.15 0.95</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.01 0.2 0.2</size>
+                        </box>
+                    </geometry>
+                </collision_shape>     
+            </body>
+            <joint type="planar" name="main_joint">
+                <plane type="zx"></plane>
+                <parent>world</parent>
+                <child>trunk</child>
+            </joint>
+            <joint type="universal" name="caudal_fin_joint">
+                <transformation>0.4 0 0 0 0 0</transformation>
+                <axis>
+                    <xyz>0 1 0</xyz>
+                </axis>
+                <axis2>
+                    <xyz>1 0 0</xyz>
+                </axis2>
+                <parent>trunk</parent>
+                <child>caudal_fin</child>
+            </joint>
+            <joint type="universal" name="pectoral_fin_joint_1">
+                <transformation>0 0 -0.1 0 0 0</transformation>
+                <axis>
+                    <xyz>0 1 0</xyz>
+                </axis>
+                <axis2>
+                    <xyz>0 0 1</xyz>
+                </axis2>
+                <parent>trunk</parent>
+                <child>pectoral_fin_1</child>
+            </joint>
+            <joint type="universal" name="pectoral_fin_joint_1">
+                <transformation>0 0 0.1 0 0 0</transformation>
+                <axis>
+                    <xyz>0 1 0</xyz>
+                </axis>
+                <axis2>
+                    <xyz>0 0 1</xyz>
+                </axis2>
+                <parent>trunk</parent>
+                <child>pectoral_fin_2</child>
+            </joint>
+        </skeleton> 
+    </world>
+</skel>

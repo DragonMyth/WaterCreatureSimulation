@@ -1,7 +1,7 @@
 import pydart2 as pydart
 import numpy as np
 import scipy as sp
-
+import creatureParamSettings as param_settings
 boxNormals = {
     'up': [0, 1, 0],
     'down': [0, -1, 0],
@@ -11,6 +11,7 @@ boxNormals = {
     'right': [1, 0, 0]
 }
 
+
 class SimpleWaterCreatureController(object):
     """
     Add control forces to the back fin
@@ -19,50 +20,66 @@ class SimpleWaterCreatureController(object):
     def __init__(self, skel):
         self.skel = skel
         # Set all target positions to zero
-        num_of_dofs = len(self.skel.dofs)
-        self.joint_amplitudes =np.zeros(num_of_dofs - 1)
-        self.omega = np.ones(num_of_dofs - 1)
-        self.phi = np.zeros(num_of_dofs - 1)
+        num_of_dofs = len(self.skel.dofs)-len(self.skel.joints[0].dofs)
+        self.joint_amplitudes = np.zeros(num_of_dofs)
+        self.omega = np.ones(num_of_dofs)
+        self.phi = np.zeros(num_of_dofs)
         # Randomly Initialize K's between 0 to 10
-        self.Kp = np.zeros(num_of_dofs - 1)
-        self.Kd = np.zeros(num_of_dofs - 1)
+        self.Kp = np.zeros(num_of_dofs)
+        self.Kd = np.zeros(num_of_dofs)
 
-    def computeTargetPos(self, t):
-        target_pos = self.joint_amplitudes * np.sin(self.omega*t+self.phi)
+    def pd_controller_target_compute(self, t):
+        target_pos = self.joint_amplitudes * np.sin(self.omega * t + self.phi)
         return target_pos
 
     def compute(self, ):
         time_step = self.skel.world.time()
-        target_pos = self.computeTargetPos(time_step)
-        curr_pos = self.skel.q[1]
-        curr_velocity = self.skel.dq[1]
+        root_dofs_num = len(self.skel.joints[0].dofs)
+        target_pos = self.pd_controller_target_compute(time_step)
+        print("Target Pos", target_pos)
+        curr_pos = self.skel.q[root_dofs_num:]
+        print("Current Pos", curr_pos)
+        curr_velocity = self.skel.dq[root_dofs_num:]
+
+        print("Current Velocity", curr_velocity)
         tau = np.zeros(len(self.skel.dofs))
-        tau[1::] = self.Kp * (target_pos - curr_pos) - self.Kd * curr_velocity
+        tau[root_dofs_num::] = self.Kp * (target_pos - curr_pos) - self.Kd * curr_velocity
+
+        # if(time_step>10.1):
+        #     tau[:] = 0
+        print("Current Torque", tau)
+
         return tau
 
 
 class MyWorld(pydart.World):
     def __init__(self, ):
-        pydart.World.__init__(self, 1.0 / 2000.0, './simpleSwimingCreature.skel')
+        skel_direction = './skeletons/FishWithPectoralFins.skel'
+        pydart.World.__init__(self, 1.0 / 2000.0, skel_direction)
         self.robot = self.skeletons[0]
-        self.duration = 0
         self.controller = SimpleWaterCreatureController(self.robot)
 
         ##Set values to the params in the controller
-        self.controller.joint_amplitudes[0] = np.pi / 4
-        self.controller.Kp[0] = 10
-        self.controller.Kd[0] = 0.5
-        self.controller.omega[0] = 1.2
-
+        param_settings.simpleFishParam(self.controller)
         self.robot.set_controller(self.controller)
+        self.forces = np.zeros((len(self.robot.bodynodes), 3))
         print(self.robot.num_dofs())
 
     def step(self, ):
         for i in range(len(self.robot.bodynodes)):
-            force = 10 * self.calcFluidForce(self.robot.bodynodes[i])
+            self.forces[i] = self.calcFluidForce(self.robot.bodynodes[i])
             # print(force)
-            self.robot.bodynodes[i].add_ext_force(force)
+            self.forces[i][1] = 0
+            self.robot.bodynodes[i].add_ext_force(self.forces[i])
+
         super(MyWorld, self).step()
+
+    def render_with_ri(self, ri):
+        for i in range(len(self.robot.bodynodes)):
+            p0 = self.robot.bodynodes[i].C
+            p1 = p0 - 2 * self.forces[i]
+            ri.set_color(0.0, 1.0, 0.0)
+            ri.render_arrow(p1, p0, r_base=0.03, head_width=0.03, head_len=0.1)
 
     def calcFluidForce(self, bodynode):
         dq = self.robot.dq

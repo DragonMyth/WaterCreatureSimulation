@@ -8,15 +8,15 @@
         </physics>
         
         <skeleton name="skeleton">
-            <body name="torso">
+            <body name="trunk">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.05</mass>
+                    <mass>0.01</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
                         <box>
-                            <size>0.5 0.25 0.25</size>
+                            <size>0.5 0.25 0.075</size>
                         </box>
                     </geometry>
                     <color>0.95 0.15 0.15</color>
@@ -24,7 +24,7 @@
                 <collision_shape>
                     <geometry>
                         <box>
-                            <size>0.5 0.25 0.25</size>
+                            <size>0.5 0.25 0.075</size>
                         </box>
                     </geometry>
                 </collision_shape>                                
@@ -45,26 +45,25 @@
                 <collision_shape>
                     <geometry>
                         <box>
-                            <size>0.15 0.2 0.001</size>
+                            <size>0.8 0.3 0.01</size>
                         </box>
                     </geometry>
                 </collision_shape>     
             </body>
-            <joint type="prismatic" name="main joint">
-                <axis> <xyz>1.0 0.0 0.0</xyz>
-                </axis>
+            <joint type="planar" name="main_joint">
+                <plane type="zx"></plane>
                 <parent>world</parent>
-                <child>torso</child>
+                <child>trunk</child>
             </joint>
-            <joint type="universal" name="back_fin_joint">
+            <joint type="universal" name="caudal_fin_joint">
                 <transformation>0.4 0 0 0 0 0</transformation>
                 <axis>
-                	<xyz>0 1 0</xyz>
-            	</axis>
-            	<axis2>
-                	<xyz>1 0 0</xyz>
-            	</axis2>
-                <parent>torso</parent>
+                    <xyz>0 1 0</xyz>
+                </axis>
+                <axis2>
+                    <xyz>1 0 0</xyz>
+                </axis2>
+                <parent>trunk</parent>
                 <child>caudal_fin</child>
             </joint>
         </skeleton> 

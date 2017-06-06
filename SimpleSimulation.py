@@ -14,75 +14,79 @@ boxNormals = {
 
 class SimpleWaterCreatureController(object):
     """
-    Add control forces to the back fin
+    Add control forces to the back fin to one skeleton
     """
 
     def __init__(self, skel):
         self.skel = skel
         # Set all target positions to zero
         num_of_dofs = len(self.skel.dofs)-len(self.skel.joints[0].dofs)
-        self.joint_amplitudes = np.zeros(num_of_dofs)
-        self.omega = np.ones(num_of_dofs)
+        self.joint_max = np.zeros(num_of_dofs)
+        self.joint_min = np.zeros(num_of_dofs)
         self.phi = np.zeros(num_of_dofs)
         # Randomly Initialize K's between 0 to 10
+
+        self.omega = np.ones(num_of_dofs)
         self.Kp = np.zeros(num_of_dofs)
         self.Kd = np.zeros(num_of_dofs)
+        self.Kp[:] = 5
+        self.Kd[:] = 0.0005
+        self.omega[:] = 25
 
     def pd_controller_target_compute(self, t):
-        target_pos = self.joint_amplitudes * np.sin(self.omega * t + self.phi)
+        amplitude = (self.joint_max-self.joint_min)*0.5
+        target_pos = amplitude * np.sin(self.omega * t + self.phi)+(self.joint_max-amplitude)
         return target_pos
 
     def compute(self, ):
         time_step = self.skel.world.time()
         root_dofs_num = len(self.skel.joints[0].dofs)
         target_pos = self.pd_controller_target_compute(time_step)
-        print("Target Pos", target_pos)
+        # print("Target Pos", target_pos)
         curr_pos = self.skel.q[root_dofs_num:]
-        print("Current Pos", curr_pos)
+        # print("Current Pos", curr_pos)
         curr_velocity = self.skel.dq[root_dofs_num:]
 
-        print("Current Velocity", curr_velocity)
+        # print("Current Velocity", curr_velocity)
         tau = np.zeros(len(self.skel.dofs))
         tau[root_dofs_num::] = self.Kp * (target_pos - curr_pos) - self.Kd * curr_velocity
 
         # if(time_step>10.1):
         #     tau[:] = 0
-        print("Current Torque", tau)
+        # print("Current Torque", tau)
 
         return tau
 
 
 class MyWorld(pydart.World):
-    def __init__(self, ):
-        skel_direction = './skeletons/FishWithPectoralFins.skel'
-        pydart.World.__init__(self, 1.0 / 2000.0, skel_direction)
-        self.robot = self.skeletons[0]
-        self.controller = SimpleWaterCreatureController(self.robot)
+    def __init__(self, skel_directory,controller,population = 5):
+        pydart.World.__init__(self, 1.0 / 2000.0,skel_directory)
 
+        
+        self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
+        self.controller = controller(self.skeletons[0])
         ##Set values to the params in the controller
-        param_settings.simpleFishParam(self.controller)
-        self.robot.set_controller(self.controller)
-        self.forces = np.zeros((len(self.robot.bodynodes), 3))
-        print(self.robot.num_dofs())
-
+        self.skeletons[0].set_controller(self.controller)
+        # self.forces[i] = np.zeros((len(self.skeletons[0].bodynodes), 3))
+        print(self.skeletons[0].num_dofs())
+        print("Initialize Finished")
     def step(self, ):
-        for i in range(len(self.robot.bodynodes)):
-            self.forces[i] = self.calcFluidForce(self.robot.bodynodes[i])
+        for i in range(len(self.skeletons[0].bodynodes)):
+            self.forces[i] = self.calcFluidForce(self.skeletons[0].bodynodes[i])
             # print(force)
-            self.forces[i][1] = 0
-            self.robot.bodynodes[i].add_ext_force(self.forces[i])
+            # self.forces[i][j][1] = 0
+            self.skeletons[0].bodynodes[i].add_ext_force(self.forces[i])
 
         super(MyWorld, self).step()
-
     def render_with_ri(self, ri):
-        for i in range(len(self.robot.bodynodes)):
-            p0 = self.robot.bodynodes[i].C
+        for i in range(len(self.skeletons[0].bodynodes)):
+            p0 = self.skeletons[0].bodynodes[i].C
             p1 = p0 - 2 * self.forces[i]
             ri.set_color(0.0, 1.0, 0.0)
             ri.render_arrow(p1, p0, r_base=0.03, head_width=0.03, head_len=0.1)
 
     def calcFluidForce(self, bodynode):
-        dq = self.robot.dq
+        dq = self.skeletons[0].dq
 
         shape = bodynode.shapenodes[0]
         worldCenterPoint = bodynode.to_world([0, 0, 0])
@@ -134,6 +138,14 @@ class MyWorld(pydart.World):
 
 if __name__ == '__main__':
     pydart.init()
+    skel_directory = './skeletons/SimpleFishWithCaudalFin.skel'
 
-    world = MyWorld()
+    world = MyWorld(skel_directory,SimpleWaterCreatureController)
+    param_settings.simpleFishParam(world.controller)
+
+    # while world.t < 2.0:
+    #     if world.nframes % 100 == 0:
+    #         skel = world.skeletons[-1]
+    #         print("%.4fs: The last model COMs = %s" % (world.t, str(skel.C)))
+    #     world.step()
     pydart.gui.viewer.launch_pyqt5(world)

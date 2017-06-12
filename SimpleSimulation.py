@@ -29,8 +29,8 @@ class SimpleWaterCreatureController(object):
         self.omega = np.ones(num_of_dofs)
         self.Kp = np.zeros(num_of_dofs)
         self.Kd = np.zeros(num_of_dofs)
-        self.Kp[:] = 5
-        self.Kd[:] = 0.0005
+        self.Kp[:] = 0.5
+        self.Kd[:] = 0.000005
         self.omega[:] = 25
 
     def pd_controller_target_compute(self, t):
@@ -62,14 +62,12 @@ class MyWorld(pydart.World):
     def __init__(self, skel_directory,controller,population = 5):
         pydart.World.__init__(self, 1.0 / 2000.0,skel_directory)
 
-        
+
         self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
         self.controller = controller(self.skeletons[0])
         ##Set values to the params in the controller
         self.skeletons[0].set_controller(self.controller)
         # self.forces[i] = np.zeros((len(self.skeletons[0].bodynodes), 3))
-        print(self.skeletons[0].num_dofs())
-        print("Initialize Finished")
     def step(self, ):
         for i in range(len(self.skeletons[0].bodynodes)):
             self.forces[i] = self.calcFluidForce(self.skeletons[0].bodynodes[i])
@@ -138,14 +136,15 @@ class MyWorld(pydart.World):
 
 if __name__ == '__main__':
     pydart.init()
-    skel_directory = './skeletons/SimpleFishWithCaudalFin.skel'
+    skel_directory = './skeletons/SimpleTurtle.skel'
 
     world = MyWorld(skel_directory,SimpleWaterCreatureController)
-    param_settings.simpleFishParam(world.controller)
+    param_settings.simpleTurtleParam(world.controller)
 
     # while world.t < 2.0:
     #     if world.nframes % 100 == 0:
     #         skel = world.skeletons[-1]
     #         print("%.4fs: The last model COMs = %s" % (world.t, str(skel.C)))
     #     world.step()
+
     pydart.gui.viewer.launch_pyqt5(world)

@@ -7,3 +7,4 @@ videos/
 *.dat
 *.pkl
 *.txt
+.pyc

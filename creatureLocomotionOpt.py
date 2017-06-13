@@ -1,46 +1,67 @@
-import SimpleSimulation
+import simplesimulation
 import pydart2 as pydart
 import cma
 import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
+import creaturecontrollers
 import multiprocessing as mp
-import creatureParamSettings as param_settings
 from functools import partial
+import threading
 
 fish_with_caudal_directory = './skeletons/SimpleFishWithCaudalFin.skel'
 fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
 
-general_option = {'maxiter': 100, 'popsize': 35, 'tolx': 1e-6}
-
+general_option = {'maxiter': 5, 'popsize': 10, 'tolx': 1e-5}
 turtle_straight_option = {'maxiter': 30, 'popsize': 30, 'fixed_variables': {2: 0, 3: 0, 6: 0, 7: 0,
                                                                             10: 0, 11: 0, 14: 0, 15: 0,
                                                                             18: 0, 19: 0, 22: 0, 23: 0}}
 
+DURATION = 1
+DIRECTORY = fish_with_caudal_directory
+CONTROLLER = creaturecontrollers.CaudalFinFishController
+OPTIONS = cma.CMAOptions.defaults()
+
+
+class WorldPool(object):
+    def __init__(self, population):
+        self.worldPool = []
+        for _ in range(population):
+            world = simplesimulation.MyWorld(DIRECTORY, CONTROLLER)
+            self.worldPool.append(world)
+
 
 def episode(world):
-    while world.t < 2:
+    while world.t < DURATION:
         world.step()
-    return world.skeletons[0].q
-
-
-def straight_fitness_func(x):
-    temp_world = SimpleSimulation.MyWorld(eel_directory, SimpleSimulation.SimpleWaterCreatureController)
-    # Set the parameter for this model
-    set_parameter_for_opt(x, temp_world.controller, 'eel')
-
-    origin_q = temp_world.skeletons[0].q
-    final_q = episode(temp_world)
-    temp_world.destroy()
-    res = -(final_q[1] - origin_q[1] - (((origin_q[0] - final_q[0]) ** 2) + (origin_q[2] - final_q[2]) ** 2))
+    res = world.skeletons[0].q
+    world.reset()
     return res
 
 
-def set_parameter_for_opt(x, controller, modelType):
+def general_fitness_func(worldPool, specFitnessFunc, x):
+    # Set the parameter for this model
+    thisWorld = worldPool.pop(0)
+    parse_param_for_optimization(x, thisWorld.controller)
+
+    origin_q = thisWorld.skeletons[0].q
+    final_q = episode(thisWorld)
+    root_joint_dof = len(thisWorld.skeletons[0].joint[0].dofs)
+    worldPool.append(thisWorld)
+
+    res = specFitnessFunc(origin_q, final_q, root_joint_dof)
+    return res
+
+
+def straight_fitness_func(origin_q, final_q, root_joint_dof):
+    cost = -0.7 * (final_q[0] - origin_q[0])
+    for i in range(1, root_joint_dof):
+        cost += (final_q[i] - origin_q[i]) ** 2
+    return cost
+
+
+def parse_param_for_optimization(x, controller, mirror=False):
     """
-    
     :param x: The result of X after one iteration
     :param controller: The controller we want to set
     :param modelType: Type of the model. Decide if we can reduce some dof for optimization
@@ -50,7 +71,7 @@ def set_parameter_for_opt(x, controller, modelType):
     controller.joint_max = x_split[0]
     controller.joint_min = x_split[1]
     controller.phi = x_split[2]
-    if modelType == 'turtle':
+    if mirror:
         controller.joint_max[2:4] = controller.joint_max[0:2]
         controller.joint_max[6:8] = controller.joint_max[4:6]
         controller.joint_min[2:4] = controller.joint_min[0:2]
@@ -63,30 +84,30 @@ def set_parameter_for_opt(x, controller, modelType):
 
 if __name__ == '__main__':
     pydart.init()
-    world = SimpleSimulation.MyWorld(eel_directory, SimpleSimulation.SimpleWaterCreatureController)
 
+    testWorld = simplesimulation.MyWorld(eel_directory, creaturecontrollers.EelController)
     # param_settings.simpleFishParam(world.controller)
-    joint_max = world.controller.joint_max
-    joint_min = world.controller.joint_min
-    phi = world.controller.phi
+    joint_max = testWorld.controller.joint_max
+    joint_min = testWorld.controller.joint_min
+    phi = testWorld.controller.phi
 
     x0 = np.concatenate((joint_max, joint_min, phi))
     es = cma.CMAEvolutionStrategy(x0, 0.3, general_option)
 
     pool = mp.Pool(es.popsize)
-    a = cma.CMAOptions.defaults()
+    worldPool = WorldPool(es.popsize).worldPool
+
     while not es.stop():
         X = es.ask()
-        # print(X)
-        fit = pool.map(straight_fitness_func, X)
-        # print(fit)
+        partial_fitness = partial(general_fitness_func, worldPool, straight_fitness_func)
+        fit = pool.map(partial_fitness, X)
+        print("MIAOMIAO")
+
         es.tell(X, fit)
         es.disp()
-        es.logger.add()
-
     res = es.result()
     print ("The final Result is: ", res[0])
 
-    world.reset()
-    set_parameter_for_opt(res[0], world.controller, 'eel')
-    pydart.gui.viewer.launch_pyqt5(world)
+    testWorld.reset()
+    parse_param_for_optimization(res[0], testWorld.controller)
+    pydart.gui.viewer.launch_pyqt5(testWorld)

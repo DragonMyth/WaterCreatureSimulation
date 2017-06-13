@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding='ASCII'?>
+<sdf version="1.4">
+        <model name="fish_with_caudal_fin">
+            <link name="trunk">
+                <pose>0 0 0 0 0 0</pose>
+                <inertial>
+                    <mass>0.01</mass>
+                </inertial>
+                <visual name="trunk_visual">
+                    <geometry>
+                        <box>
+                            <size>0.5 0.25 0.075</size>
+                        </box>
+                    </geometry>
+                    <material>
+                      <diffuse>0.95 0.15 0.15</diffuse>
+                    </material>
+                </visual>
+                <collision name="trunk_collision">
+                    <geometry>
+                        <box>
+                            <size>0.5 0.25 0.075</size>
+                        </box>
+                    </geometry>
+                </collision>                                
+            </link>
+            <link name="caudal_fin">
+                <pose>-0.65 0 0 0 0 0</pose>
+                <inertial>
+                    <mass>0.0024</mass>
+                </inertial>
+                <visual name="fin_visual">
+                    <geometry>
+                        <box>
+                            <size>0.8 0.3 0.01</size>
+                        </box>
+                    </geometry>
+                    <material>
+                      <diffuse>0.15 0.15 0.95</diffuse>
+                    </material>
+                </visual>
+                <collision name="fin_collision">
+                    <geometry>
+                        <box>
+                            <size>0.8 0.3 0.01</size>
+                        </box>
+                    </geometry>
+                </collision>     
+            </link>
+            <!-- <joint type="planar" name="main_joint">
+                <plane type="zx"></plane>
+                <parent>world</parent>
+                <child>trunk</child>
+            </joint> -->
+            <joint type="prismatic" name="main_joint">
+                <axis>
+                    <xyz>1 0 0</xyz>
+                </axis>
+                <parent>world</parent>
+                <child>trunk</child>
+            </joint>
+            <joint type="universal" name="caudal_fin_joint">
+                <transformation>0.4 0 0 0 0 0</transformation>
+                <axis>
+                    <xyz>0 1 0</xyz>
+                </axis>
+                <axis2>
+                    <xyz>1 0 0</xyz>
+                </axis2>
+                <parent>trunk</parent>
+                <child>caudal_fin</child>
+            </joint>
+        </model> 
+</sdf>

@@ -141,11 +141,7 @@
                 <child>torso</child>
             </joint>
 
-            <joint type="revolute" name="head_joint">
-                <transformation>0 0 0 0 0 0</transformation>
-                <axis>
-                    <xyz>0 1 0</xyz>
-                </axis>
+            <joint type="weld" name="head_joint">
                 <parent>torso</parent>
                 <child>head</child>
             </joint>

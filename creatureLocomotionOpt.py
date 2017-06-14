@@ -12,14 +12,14 @@ fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
 
-general_option = {'maxiter': 20, 'popsize': 30, 'tolx': 1e-4}
+general_option = {'maxiter': 10, 'popsize': 30, 'tolx': 1e-4}
 turtle_straight_option = {'maxiter': 30, 'popsize': 30, 'fixed_variables': {2: 0, 3: 0, 6: 0, 7: 0,
                                                                             10: 0, 11: 0, 14: 0, 15: 0,
                                                                             18: 0, 19: 0, 22: 0, 23: 0}}
 
 DURATION = 1
-DIRECTORY = eel_directory
-CONTROLLER = creaturecontrollers.EelController
+DIRECTORY = fish_with_caudal_directory
+CONTROLLER = creaturecontrollers.CaudalFinFishController
 OPTIONS = cma.CMAOptions.defaults()
 
 
@@ -48,6 +48,7 @@ def general_fitness_func(specFitnessFunc, x):
     # Set the parameter for this model
     # thisWorld = worldPool.pop(0)
     global currentWorld
+    print(currentWorld.id)
     parse_param_for_optimization(x, currentWorld.controller)
 
     origin_q = currentWorld.skeletons[0].q
@@ -61,7 +62,7 @@ def general_fitness_func(specFitnessFunc, x):
 
 
 def straight_fitness_func(origin_q, final_q, root_joint_dof):
-    cost = -2 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / (final_q[3] - origin_q[3]))
+    cost = - 5* (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / (final_q[3] - origin_q[3]))
     for i in range(root_joint_dof):
         if (i == 3): continue
         cost += 3 * (final_q[i] - origin_q[i]) ** 2
@@ -100,16 +101,23 @@ if __name__ == '__main__':
 
     x0 = np.concatenate((joint_max, joint_min, phi))
 
-    es = cma.CMAEvolutionStrategy(x0, 0.3, general_option)
+    es = cma.CMAEvolutionStrategy(x0, 0.5, general_option)
 
-    worldPool = WorldPool(es.popsize).worldPool
-
-    pool = mp.Pool(es.popsize, _init, (worldPool,))
+    processCnt = 2 * mp.cpu_count()
+    worldPool = WorldPool(processCnt).worldPool
+    pool = mp.Pool(processCnt, _init, (worldPool,))
 
     while not es.stop():
         X = es.ask()
         partial_fitness = partial(general_fitness_func, straight_fitness_func)
-        fit = pool.map(partial_fitness, X)
+        fit = []
+        for i in range(int(np.ceil(es.popsize / processCnt)) + 1):
+            if (len(X[i * processCnt:]) < processCnt):
+                batchFit = pool.map(partial_fitness, X[i * processCnt:])
+            else:
+                batchFit = pool.map(partial_fitness, X[i * processCnt:(i + 1) * processCnt])
+            fit.extend(batchFit)
+        # fit = pool.map(partial_fitness, X)
         es.tell(X, fit)
         es.disp()
         es.logger.add()

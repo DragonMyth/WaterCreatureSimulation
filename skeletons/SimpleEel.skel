@@ -8,6 +8,7 @@
         </physics>
         
         <skeleton name="eel">
+            <transformation>-1 0 0 0 0 0</transformation>
             <body name="head">
                 <transformation>0.5 0 0 0 0 0</transformation>
                 <inertia>
@@ -135,8 +136,7 @@
                 </collision_shape>                                
             </body>
 
-            <joint type="planar" name="main_joint">
-                <plane type="zx"></plane>
+            <joint type="free" name="main_joint">
                 <parent>world</parent>
                 <child>head</child>
             </joint>

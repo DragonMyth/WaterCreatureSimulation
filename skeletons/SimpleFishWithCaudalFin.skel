@@ -8,6 +8,7 @@
         </physics>
         
         <skeleton name="skeleton">
+             <transformation>-1 0 0 0 0 0</transformation>
             <body name="trunk">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
@@ -50,8 +51,7 @@
                     </geometry>
                 </collision_shape>     
             </body>
-            <joint type="planar" name="main_joint">
-                <plane type="zx"></plane>
+            <joint type="free" name="main_joint">
                 <parent>world</parent>
                 <child>trunk</child>
             </joint>

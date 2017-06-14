@@ -23,6 +23,7 @@ class MyWorld(pydart.World):
         self.controller = controller(self.skeletons[0])
         ##Set values to the params in the controller
         self.skeletons[0].set_controller(self.controller)
+        # self.skeletons[0].q = [0, 0, 0, -1, 0, 0,0,0]
 
     def step(self, ):
         for i in range(len(self.skeletons[0].bodynodes)):
@@ -91,6 +92,6 @@ class MyWorld(pydart.World):
 if __name__ == '__main__':
     pydart.init()
 
-    world = MyWorld(fish_with_caudal_directory, controller.CaudalFinFishController)
+    world = MyWorld(eel_directory, controller.EelController)
 
     pydart.gui.viewer.launch_pyqt5(world)

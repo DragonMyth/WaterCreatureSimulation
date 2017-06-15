@@ -12,7 +12,7 @@ fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
 
-general_option = {'maxiter': 20, 'popsize': 30, 'tolx': 1e-4}
+general_option = {'maxiter': 120, 'popsize': 30, 'tolx': 1e-4, 'tolfun': 1e-1}
 turtle_straight_option = {'maxiter': 30, 'popsize': 30, 'fixed_variables': {2: 0, 3: 0, 6: 0, 7: 0,
                                                                             10: 0, 11: 0, 14: 0, 15: 0,
                                                                             18: 0, 19: 0, 22: 0, 23: 0}}
@@ -36,9 +36,24 @@ def _init(queue):
     currentWorld = queue.get()
 
 
+def setBoundary(length, joint_max_l, joint_max_u, joint_min_l, joint_min_u, phi_l, phi_h):
+    lower_bounds = [0 for _ in range(length)]
+    upper_bounds = [0 for _ in range(length)]
+    for i in range(length / 3):
+        lower_bounds[3 * i] = joint_max_l
+        lower_bounds[3 * i + 1] = joint_min_l
+        lower_bounds[3 * i + 2] = phi_l
+        upper_bounds[3 * i] = joint_max_u
+        upper_bounds[3 * i + 1] = joint_min_u
+        upper_bounds[3 * i + 2] = phi_h
+
+    return lower_bounds, upper_bounds
+
+
 def episode():
     global currentWorld
     while currentWorld.t < DURATION:
+        # print("processIdent",mp.current_process().pid,'ID2', currentWorld.id)
         currentWorld.step()
     res = currentWorld.skeletons[0].q
     return res
@@ -61,10 +76,10 @@ def general_fitness_func(specFitnessFunc, x):
 
 
 def straight_fitness_func(origin_q, final_q, root_joint_dof):
-    cost = -2 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / (final_q[3] - origin_q[3]))
+    cost = - 3 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / abs(final_q[3] - origin_q[3]))
     for i in range(root_joint_dof):
         if (i == 3): continue
-        cost += 3 * (final_q[i] - origin_q[i]) ** 2
+        cost += 5 * (final_q[i] - origin_q[i]) ** 2
     return cost
 
 
@@ -99,23 +114,35 @@ if __name__ == '__main__':
     phi = testWorld.controller.phi
 
     x0 = np.concatenate((joint_max, joint_min, phi))
+    lb, hb = setBoundary(len(x0), 0, np.pi / 4, -np.pi / 4, 0, -np.pi, np.pi)
+    general_option['boundary_handling'] = cma.BoundPenalty
+    general_option['bounds'] = [lb, hb]
 
-    es = cma.CMAEvolutionStrategy(x0, 0.3, general_option)
+    es = cma.CMAEvolutionStrategy(x0, 0.5, general_option)
 
-    worldPool = WorldPool(es.popsize).worldPool
-
-    pool = mp.Pool(es.popsize, _init, (worldPool,))
+    processCnt = 2 * mp.cpu_count()
+    worldPool = WorldPool(processCnt).worldPool
+    pool = mp.Pool(processCnt, _init, (worldPool,))
 
     while not es.stop():
         X = es.ask()
         partial_fitness = partial(general_fitness_func, straight_fitness_func)
-        fit = pool.map(partial_fitness, X)
+        fit = []
+        for i in range(int(np.ceil(es.popsize / processCnt)) + 1):
+            if (len(X[i * processCnt:]) < processCnt):
+                batchFit = pool.map(partial_fitness, X[i * processCnt:])
+            else:
+                batchFit = pool.map(partial_fitness, X[i * processCnt:(i + 1) * processCnt])
+            fit.extend(batchFit)
+        # fit = pool.map(partial_fitness, X)
+
         es.tell(X, fit)
         es.disp()
         es.logger.add()
-    res = es.result()
-    print ("The final Result is: ", res[0])
+    res = es.result()[0]
+
+    print ("The final Result is: ", res)
 
     testWorld.reset()
-    parse_param_for_optimization(res[0], testWorld.controller)
+    parse_param_for_optimization(res, testWorld.controller)
     pydart.gui.viewer.launch_pyqt5(testWorld)

@@ -6,7 +6,6 @@
             <gravity>0 0 0</gravity>
             <collision_detector>dart</collision_detector>
         </physics>
-        
         <skeleton name="eel">
             <transformation>-1 0 0 0 0 0</transformation>
             <body name="head">
@@ -28,7 +27,7 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="segment_1">
                 <transformation>0.3 0 0 0 0 0</transformation>
@@ -49,7 +48,7 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="segment_2">
                 <transformation>0.1 0 0 0 0 0</transformation>
@@ -70,7 +69,7 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="segment_3">
                 <transformation>-0.1 0 0 0 0 0</transformation>
@@ -91,7 +90,7 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="segment_4">
                 <transformation>-0.3 0 0 0 0 0</transformation>
@@ -112,7 +111,7 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="segment_5">
                 <transformation>-0.5 0 0 0 0 0</transformation>
@@ -133,14 +132,13 @@
                             <size>0.2 0.15 0.02</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
-
-            <joint type="free" name="main_joint">
+            <joint name="main_joint" type="free">
                 <parent>world</parent>
                 <child>head</child>
             </joint>
-            <joint type="revolute" name="segment_1_joint">
+            <joint name="segment_1_joint" type="revolute">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -148,7 +146,7 @@
                 <parent>head</parent>
                 <child>segment_1</child>
             </joint>
-            <joint type="revolute" name="segment_2_joint">
+            <joint name="segment_2_joint" type="revolute">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -156,7 +154,7 @@
                 <parent>segment_1</parent>
                 <child>segment_2</child>
             </joint>
-            <joint type="revolute" name="segment_3_joint">
+            <joint name="segment_3_joint" type="revolute">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -164,7 +162,7 @@
                 <parent>segment_2</parent>
                 <child>segment_3</child>
             </joint>
-            <joint type="revolute" name="segment_4_joint">
+            <joint name="segment_4_joint" type="revolute">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -172,7 +170,7 @@
                 <parent>segment_3</parent>
                 <child>segment_4</child>
             </joint>
-            <joint type="revolute" name="segment_5_joint">
+            <joint name="segment_5_joint" type="revolute">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -183,6 +181,6 @@
                 <parent>segment_4</parent>
                 <child>segment_5</child>
             </joint>
-        </skeleton> 
+        </skeleton>
     </world>
 </skel>

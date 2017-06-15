@@ -6,7 +6,6 @@
             <gravity>0 0 0</gravity>
             <collision_detector>dart</collision_detector>
         </physics>
-        
         <skeleton name="skeleton">
             <body name="torso">
                 <transformation>0 0 0 0 0 0</transformation>
@@ -22,12 +21,12 @@
                     <color>0.95 0.15 0.15</color>
                 </visualization_shape>
                 <collision_shape>
-                    <geometry>
+                    <geometry> 
                         <box>
-                            <size>0.5 0.1 0.25</size>
+                            <size>0.5 0.1 0.25</size> 
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="left_front_limb">
                 <transformation>0.24 0 0.205 0 0 0</transformation>
@@ -48,7 +47,28 @@
                             <size>0.02 0.1 0.16</size>
                         </box>
                     </geometry>
-                </collision_shape>     
+                </collision_shape>
+            </body>
+            <body name="left_front_limb_rear">
+                <transformation>0.24 0 0.205 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0024</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.1 0.16</size>
+                        </box>
+                    </geometry>
+                    <color>0.15 0.15 0.95</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.1 0.16</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
             </body>
             <body name="right_front_limb">
                 <transformation>0.24 0 -0.205 0 0 0</transformation>
@@ -69,8 +89,8 @@
                             <size>0.02 0.1 0.16</size>
                         </box>
                     </geometry>
-                </collision_shape>     
-            </body>      
+                </collision_shape>
+            </body>
             <body name="left_rear_limb">
                 <transformation>-0.24 0 0.205 0 0 0</transformation>
                 <inertia>
@@ -90,8 +110,8 @@
                             <size>0.02 0.1 0.16</size>
                         </box>
                     </geometry>
-                </collision_shape>     
-            </body> 
+                </collision_shape>
+            </body>
             <body name="right_rear_limb">
                 <transformation>-0.24 0 -0.205 0 0 0</transformation>
                 <inertia>
@@ -111,8 +131,8 @@
                             <size>0.02 0.1 0.16</size>
                         </box>
                     </geometry>
-                </collision_shape>     
-            </body>   
+                </collision_shape>
+            </body>
             <body name="head">
                 <transformation>0.3 0 0 0 0 0</transformation>
                 <inertia>
@@ -132,21 +152,18 @@
                             <size>0.1 0.1 0.1</size>
                         </box>
                     </geometry>
-                </collision_shape>     
-            </body>   
-
-            <joint type="planar" name="main_joint">
-                <plane type="zx"></plane>
+                </collision_shape>
+            </body>
+            <joint name="main_joint" type="planar">
+                <plane type="zx"/>
                 <parent>world</parent>
                 <child>torso</child>
             </joint>
-
-            <joint type="weld" name="head_joint">
+            <joint name="head_joint" type="weld">
                 <parent>torso</parent>
                 <child>head</child>
             </joint>
-
-            <joint type="universal" name="left_front_limb_joint">
+            <joint name="left_front_limb_joint" type="universal">
                 <transformation>0 0 -0.08 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -157,7 +174,7 @@
                 <parent>torso</parent>
                 <child>left_front_limb</child>
             </joint>
-            <joint type="universal" name="right_front_limb_joint">
+            <joint name="right_front_limb_joint" type="universal">
                 <transformation>0 0 0.08 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -168,7 +185,7 @@
                 <parent>torso</parent>
                 <child>right_front_limb</child>
             </joint>
-            <joint type="universal" name="left_rear_limb_joint">
+            <joint name="left_rear_limb_joint" type="universal">
                 <transformation>0 0 -0.08 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -179,7 +196,7 @@
                 <parent>torso</parent>
                 <child>left_rear_limb</child>
             </joint>
-            <joint type="universal" name="right_rear_limb_joint">
+            <joint name="right_rear_limb_joint" type="universal">
                 <transformation>0 0 0.08 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -190,6 +207,6 @@
                 <parent>torso</parent>
                 <child>right_rear_limb</child>
             </joint>
-        </skeleton> 
+        </skeleton>
     </world>
 </skel>

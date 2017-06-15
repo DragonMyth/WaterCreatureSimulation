@@ -6,9 +6,8 @@
             <gravity>0 0 0</gravity>
             <collision_detector>dart</collision_detector>
         </physics>
-        
         <skeleton name="skeleton">
-             <transformation>-1 0 0 0 0 0</transformation>
+            <transformation>-1 0 0 0 0 0</transformation>
             <body name="trunk">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
@@ -28,7 +27,7 @@
                             <size>0.5 0.25 0.075</size>
                         </box>
                     </geometry>
-                </collision_shape>                                
+                </collision_shape>
             </body>
             <body name="caudal_fin">
                 <transformation>-0.65 0 0 0 0 0</transformation>
@@ -49,13 +48,13 @@
                             <size>0.8 0.3 0.01</size>
                         </box>
                     </geometry>
-                </collision_shape>     
+                </collision_shape>
             </body>
-            <joint type="free" name="main_joint">
+            <joint name="main_joint" type="free">
                 <parent>world</parent>
                 <child>trunk</child>
             </joint>
-            <joint type="universal" name="caudal_fin_joint">
+            <joint name="caudal_fin_joint" type="universal">
                 <transformation>0.4 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 1 0</xyz>
@@ -66,6 +65,6 @@
                 <parent>trunk</parent>
                 <child>caudal_fin</child>
             </joint>
-        </skeleton> 
+        </skeleton>
     </world>
 </skel>

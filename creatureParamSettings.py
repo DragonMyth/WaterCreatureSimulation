@@ -45,7 +45,7 @@ def simpleTurtleParam(controller):
     controller.joint_max[:] = np.pi/3
     controller.joint_min[:] = -np.pi/3
 
-    controller.Kp[:] = 0.5
+    controller.Kp[:] = 0.05
 
     controller.Kd[:] = 0.00005
 

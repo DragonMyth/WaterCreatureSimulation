@@ -1,11 +1,16 @@
 import pydart2 as pydart
 import numpy as np
-import creaturecontrollers as controller
+import creaturecontrollers
 
 fish_with_caudal_directory = './skeletons/SimpleFishWithCaudalFin.skel'
 fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
+
+
+
+DIRECTORY = turtle_directory
+CONTROLLER = creaturecontrollers.TurtleController
 boxNormals = {
     'up': [0, 1, 0],
     'down': [0, -1, 0],
@@ -92,6 +97,6 @@ class MyWorld(pydart.World):
 if __name__ == '__main__':
     pydart.init()
 
-    world = MyWorld(eel_directory, controller.EelController)
+    world = MyWorld(DIRECTORY, CONTROLLER)
 
     pydart.gui.viewer.launch_pyqt5(world)

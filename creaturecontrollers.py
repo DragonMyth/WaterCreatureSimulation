@@ -64,6 +64,6 @@ class EelController(BaseCreatureController):
 class TurtleController(BaseCreatureController):
     def __init__(self, skel):
         BaseCreatureController.__init__(self, skel)
-        self.Kp[:] = 0.5
+        self.Kp[:] = 0.05
         self.Kd[:] = 0.00005
         self.omega[:] = 25

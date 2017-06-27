@@ -50,7 +50,7 @@ def plotTurtleLimpT():
 
     fig, ax = plt.subplots(1,1,figsize=(10,10),subplot_kw={'projection':'3d'})
 
-    Z = np.linspace(-0.2,0.2,len(taus[0]))
+    Z = np.linspace(-0.5,0.5,len(taus[0]))
     for j in range(len(taus[0])):
         ax.plot(T,taus[:,j],zs=Z[j],zdir = 'y',label='Joint No. ' + str(j+1))
 
@@ -62,8 +62,8 @@ def plotTurtleLimpT():
 
 
 if __name__ == '__main__':
-    res = initData('optimaEel.txt')
+    res = initData('NewTurtleOptimaResult.txt')
 
     joint_max, joint_min, phi = split_parameter(res)
-    # plot3dPhi(phi)
-    plotTurtleLimpT()
+    plot3dPhi(phi)
+    # plotTurtleLimpT()

@@ -54,3 +54,19 @@ def simpleTurtleParam(controller):
     controller.phi[2] += np.pi
     controller.phi[6] += np.pi
 
+def testFlatCreatureParam(controller):
+    controller.joint_max[:] = np.pi / 2
+    controller.joint_min[:] = -np.pi / 2
+    for i in range(len(controller.phi)):
+        controller.phi[i] -= (-1)**i*i*np.pi/4
+
+
+def loopCreatureParam(controller):
+
+    controller.joint_max[0] = np.pi/3*2
+    controller.joint_min[0] = 0
+    controller.joint_max[1] = 0
+    controller.joint_min[1] = -np.pi/3*2
+    controller.omega[:] = 25
+
+    # pass

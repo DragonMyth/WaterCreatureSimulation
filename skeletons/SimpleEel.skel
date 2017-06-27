@@ -175,9 +175,6 @@
                 <axis>
                     <xyz>0 1 0</xyz>
                 </axis>
-                <axis2>
-                    <xyz>1 0 0</xyz>
-                </axis2>
                 <parent>segment_4</parent>
                 <child>segment_5</child>
             </joint>

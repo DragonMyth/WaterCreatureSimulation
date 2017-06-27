@@ -1,16 +1,18 @@
 import pydart2 as pydart
 import numpy as np
 import creaturecontrollers
-
+import creatureParamSettings
+import jointconstraints as constraints
 fish_with_caudal_directory = './skeletons/SimpleFishWithCaudalFin.skel'
 fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
+flat_creature_directory = './skeletons/FlatShapeCreature.skel'
+constraint_test_directory = './skeletons/JointConstraintsTestModel.skel'
 
-
-
-DIRECTORY = turtle_directory
-CONTROLLER = creaturecontrollers.TurtleController
+DIRECTORY = constraint_test_directory
+CONTROLLER = creaturecontrollers.ConstraintTestModelController
+CONSTRAINTS = None
 boxNormals = {
     'up': [0, 1, 0],
     'down': [0, -1, 0],
@@ -21,14 +23,27 @@ boxNormals = {
 }
 
 class MyWorld(pydart.World):
-    def __init__(self, skel_directory, controller):
+    def __init__(self, skel_directory, controller, forceVisual = False):
         pydart.World.__init__(self, 1.0 / 2000.0, skel_directory)
-
+        self.forceVisual = forceVisual
         self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
-        self.controller = controller(self.skeletons[0])
+        self.controller = controller(self.skeletons[0],self.dt)
         ##Set values to the params in the controller
         self.skeletons[0].set_controller(self.controller)
-        # self.skeletons[0].q = [0, 0, 0, -1, 0, 0,0,0]
+
+        skel = self.skeletons[0]
+        q=skel.q
+        q[6] = np.pi/3*1.8
+        q[7] = -np.pi/3*1.8
+        skel.set_positions(q)
+        bd1 = skel.bodynodes[0]
+        bd2 = skel.bodynodes[2]
+        jointPos = np.array([-np.sqrt(3)/2*0.2,0,0])
+        joint = pydart.constraints.BallJointConstraint(bd1,bd2,jointPos)
+        # joint.add_to_world(self)
+
+        if CONSTRAINTS is not None:
+            CONSTRAINTS(self.skeletons[0])
 
     def step(self, ):
         for i in range(len(self.skeletons[0].bodynodes)):
@@ -37,11 +52,12 @@ class MyWorld(pydart.World):
         super(MyWorld, self).step()
 
     def render_with_ri(self, ri):
-        for i in range(len(self.skeletons[0].bodynodes)):
-            p0 = self.skeletons[0].bodynodes[i].C
-            p1 = p0 - 2 * self.forces[i]
-            ri.set_color(0.0, 1.0, 0.0)
-            ri.render_arrow(p1, p0, r_base=0.03, head_width=0.03, head_len=0.1)
+        if self.forceVisual:
+            for i in range(len(self.skeletons[0].bodynodes)):
+                p0 = self.skeletons[0].bodynodes[i].C
+                p1 = p0 - 2 * self.forces[i]
+                ri.set_color(0.0, 1.0, 0.0)
+                ri.render_arrow(p1, p0, r_base=0.03, head_width=0.03, head_len=0.1)
 
     def calcFluidForce(self, bodynode):
         dq = self.skeletons[0].dq
@@ -98,5 +114,5 @@ if __name__ == '__main__':
     pydart.init()
 
     world = MyWorld(DIRECTORY, CONTROLLER)
-
+    creatureParamSettings.loopCreatureParam(world.controller)
     pydart.gui.viewer.launch_pyqt5(world)

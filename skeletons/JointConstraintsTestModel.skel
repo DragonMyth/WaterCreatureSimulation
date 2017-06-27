@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<skel version="1.0">
+    <world name="world 1">
+        <physics>
+            <time_step>0.0001</time_step>
+            <gravity>0 0 0</gravity>
+            <collision_detector>dart</collision_detector>
+        </physics>
+        <skeleton name="loop">
+            <transformation>0 0 0 0 0 0</transformation>
+            <body name="spine_0">
+                <transformation>0 0.2 0 0 0 0</transformation>
+                <inertia>
+                    <mass>0.01</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.15</size>
+                        </box>
+                    </geometry>
+                    <color>0.95 0.15 0.15</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.15</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
+            </body>
+            <body name="spine_1">
+                <transformation>0 0 0 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0002</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.015</size>
+                        </box>
+                    </geometry>
+                    <color>0.15 0.15 0.95</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.015</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
+            </body>
+            <body name="spine_2">
+                <transformation>0 -0.2 0 0 0 0</transformation>
+                <inertia>
+                    <mass>0.0002</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.15</size>
+                        </box>
+                    </geometry>
+                    <color>0.95 0.15 0.15</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.02 0.2 0.15</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
+            </body>
+            
+            <joint name="main_joint" type="free">
+                <parent>world</parent>
+                <child>spine_1</child>
+            </joint>
+            <joint name="spine_1_joint" type="revolute">
+                <transformation>0 -0.1 0 0 0 0</transformation>
+                <axis>
+                    <xyz>0 0 1</xyz>
+                </axis>
+                <parent>spine_1</parent>
+                <child>spine_0</child>
+            </joint>
+            <joint name="spine_2_joint" type="revolute">
+                <transformation>0 0.1 0 0 0 0</transformation>
+                <axis>
+                    <xyz>0 0 1</xyz>
+                </axis>
+                <parent>spine_1</parent>
+                <child>spine_2</child>
+            </joint>
+    
+        </skeleton>
+    </world>
+</skel>

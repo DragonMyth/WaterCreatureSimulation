@@ -17,7 +17,7 @@ class BaseCreatureController(object):
         self.joint_max = np.zeros(num_of_dofs)
         self.joint_min = np.zeros(num_of_dofs)
         self.phi = np.zeros(num_of_dofs)
-        self.omega = np.ones(num_of_dofs)
+        self.omega = 15*np.ones(num_of_dofs)
 
         self.Kp = np.diagflat([0.0] * len(self.skel.joints[0].dofs) + [400000.0] * num_of_dofs)
         self.Kd = self.dt*self.Kp
@@ -53,7 +53,6 @@ class BaseCreatureController(object):
 class CaudalFinFishController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 10
         num_of_dofs = len(self.skel.dofs) - len(self.skel.joints[0].dofs)
 
         # kp = world.d
@@ -64,17 +63,14 @@ class CaudalFinFishController(BaseCreatureController):
 class PectoralFinFishController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 25
 
 
 class EelController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 25
 class FlatCreatureController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 25
         num_of_dofs = len(self.skel.dofs) - len(self.skel.joints[0].dofs)
 
         # self.Kp = np.diagflat([0.0] * len(self.skel.joints[0].dofs) + [1000.0] * num_of_dofs)
@@ -82,7 +78,6 @@ class FlatCreatureController(BaseCreatureController):
 class ConstraintTestModelController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 25
 
         # q = skel.q
         # q[8]= 0.2
@@ -106,7 +101,6 @@ class ConstraintTestModelController(BaseCreatureController):
 class TurtleController(BaseCreatureController):
     def __init__(self, skel,dt,world):
         BaseCreatureController.__init__(self, skel,dt)
-        self.omega[:] = 25
 
     def pd_controller_target_compute(self, t):
         amplitude = (self.joint_max - self.joint_min) * 0.5

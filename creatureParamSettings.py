@@ -7,8 +7,6 @@ def simpleFishParam(controller):
 
     controller.joint_max[1] = np.pi / 6
     controller.joint_min[1] = -np.pi / 6
-    controller.Kp[:] = 5
-    controller.Kd[:] = 0.0005
     controller.omega[:] = 25
     # controller.phi[2] = 25*np.pi/2
 
@@ -63,10 +61,12 @@ def testFlatCreatureParam(controller):
 
 def loopCreatureParam(controller):
 
-    controller.joint_max[0] = np.pi/3*2
-    controller.joint_min[0] = 0
-    controller.joint_max[1] = 0
-    controller.joint_min[1] = -np.pi/3*2
+
+    controller.joint_max[2] = -np.pi/2
+    controller.joint_min[2] = np.pi/2
+    controller.joint_max[3] = np.pi/2
+    controller.joint_min[3] = -np.pi/2
+
     controller.omega[:] = 25
 
     # pass

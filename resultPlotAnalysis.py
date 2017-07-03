@@ -62,8 +62,9 @@ def plotTurtleLimpT():
 
 
 if __name__ == '__main__':
-    res = initData('NewTurtleOptimaResult.txt')
+    res = initData('LatestOptimaResult.txt')
 
     joint_max, joint_min, phi = split_parameter(res)
+    plt.show()
     plot3dPhi(phi)
     # plotTurtleLimpT()

@@ -8,15 +8,15 @@
         </physics>
         <skeleton name="loop">
             <transformation>0 0 0 0 0 0</transformation>
-            <body name="spine_0">
-                <transformation>0 0.2 0 0 0 0</transformation>
+            <body name="front_left">
+                <transformation>0 0 -0.11 0 0 0</transformation>
                 <inertia>
-                    <mass>0.01</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.15</size>
+                            <size>0.16 0.02 0.2</size>
                         </box>
                     </geometry>
                     <color>0.95 0.15 0.15</color>
@@ -24,41 +24,41 @@
                 <collision_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.15</size>
+                            <size>0.16 0.02 0.2</size>
                         </box>
                     </geometry>
                 </collision_shape>
             </body>
-            <body name="spine_1">
+            <body name="front_mid">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.001</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.015</size>
+                            <size>0.16 0.3 0.02</size>
                         </box>
                     </geometry>
-                    <color>0.15 0.15 0.95</color>
+                    <color>0.15 0.15 0.95 </color>
                 </visualization_shape>
                 <collision_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.015</size>
+                            <size>0.16 0.02 0.02</size>
                         </box>
                     </geometry>
                 </collision_shape>
             </body>
-            <body name="spine_2">
-                <transformation>0 -0.2 0 0 0 0</transformation>
+            <body name="front_right">
+                <transformation>0 0 0.11 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.15</size>
+                            <size>0.16 0.02 0.2</size>
                         </box>
                     </geometry>
                     <color>0.95 0.15 0.15</color>
@@ -66,32 +66,93 @@
                 <collision_shape>
                     <geometry>
                         <box>
-                            <size>0.02 0.2 0.15</size>
+                            <size>0.16 0.02 0.2</size>
                         </box>
                     </geometry>
                 </collision_shape>
             </body>
-            
+            <body name="tail_left">
+                <transformation>-0.21 0 -0.11 0 0 0</transformation>
+                <inertia>
+                    <mass>0.001</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.26 0.02 0.22</size>
+                        </box>
+                    </geometry>
+                    <color>0.95 0.75 0.45</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.26 0.02 0.22</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
+            </body>
+            <body name="tail_right">
+                <transformation>-0.21 0 0.11 0 0 0</transformation>
+                <inertia>
+                    <mass>0.001</mass>
+                </inertia>
+                <visualization_shape>
+                    <geometry>
+                        <box>
+                            <size>0.26 0.02 0.22</size>
+                        </box>
+                    </geometry>
+                    <color>0.95 0.75 0.45</color>
+                </visualization_shape>
+                <collision_shape>
+                    <geometry>
+                        <box>
+                            <size>0.26 0.02 0.22</size>
+                        </box>
+                    </geometry>
+                </collision_shape>
+            </body>
             <joint name="main_joint" type="free">
                 <parent>world</parent>
-                <child>spine_1</child>
+                <child>front_mid</child>
             </joint>
-            <joint name="spine_1_joint" type="revolute">
-                <transformation>0 -0.1 0 0 0 0</transformation>
+            <joint name="front_left_joint" type="revolute">
+                <transformation>0 0 0.1 0 0 0</transformation>
+                <axis>
+                    <xyz>1 0 0</xyz>
+                </axis>
+                <parent>front_mid</parent>
+                <child>front_left</child>
+            </joint>
+            <joint name="front_right_joint" type="revolute">
+                <transformation>0 0 -0.1 0 0 0</transformation>
+                <axis>
+                    <xyz>1 0 0</xyz>
+                </axis>
+                <parent>front_mid</parent>
+                <child>front_right</child>
+            </joint>
+            <joint name="tail_left_joint" type="revolute">
+                <transformation>0.13 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 0 1</xyz>
                 </axis>
-                <parent>spine_1</parent>
-                <child>spine_0</child>
+                <parent>front_left</parent>
+                <child>tail_left</child>
             </joint>
-            <joint name="spine_2_joint" type="revolute">
-                <transformation>0 0.1 0 0 0 0</transformation>
+            <joint name="tail_right_joint" type="revolute">
+                <transformation>0.13 0 0 0 0 0</transformation>
                 <axis>
                     <xyz>0 0 1</xyz>
                 </axis>
-                <parent>spine_1</parent>
-                <child>spine_2</child>
+                <parent>front_right</parent>
+                <child>tail_right</child>
             </joint>
+
+
+            
+            
     
         </skeleton>
     </world>

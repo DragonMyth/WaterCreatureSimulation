@@ -12,17 +12,18 @@ fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
 eel_directory = './skeletons/SimpleEel.skel'
 turtle_directory = './skeletons/SimpleTurtle.skel'
 flat_creature_directory = './skeletons/FlatShapeCreature.skel'
+constraint_test_directory = './skeletons/JointConstraintsTestModel.skel'
 
-general_option = {'maxiter': 80, 'popsize': 35, 'tolx': 1e-4, 'tolfun': 1e-1}
-turtle_straight_option = {'maxiter': 120, 'popsize': 30,
+general_option = {'maxiter': 120, 'popsize': 35, 'tolx': 1e-4, 'tolfun': 1e-1}
+turtle_straight_option = {'maxiter': 80, 'popsize': 30,
                           'fixed_variables': {4: 0, 5: 0, 6: 0, 7: 0, 12: 0, 13: 0, 14: 0, 15: 0, 20: 0, 21: 0,
                                               22: 0, 23: 0}}
 
-DURATION = 0.5
-DIRECTORY = eel_directory
-CONTROLLER = creaturecontrollers.EelController
-OPTIONS = general_option
-NUM_RESTART = 10
+DURATION = 1.2
+DIRECTORY = turtle_directory
+CONTROLLER = creaturecontrollers.TurtleController
+OPTIONS = turtle_straight_option
+NUM_RESTART = 5
 
 
 class WorldPool(object):
@@ -30,17 +31,6 @@ class WorldPool(object):
         self.worldPool = mp.Manager().Queue()
         for _ in range(population):
             world = simplesimulation.MyWorld(DIRECTORY, CONTROLLER)
-            skel = world.skeletons[0]
-            q = skel.q
-            q[2] = np.pi / 2
-            q[6] = np.pi / 3 * 2
-            q[7] = -np.pi / 3 * 2
-            skel.set_positions(q)
-            bd1 = skel.bodynodes[0]
-            bd2 = skel.bodynodes[2]
-            jointPos = np.array([np.sqrt(3) / 2 * 0.2, 0.1, 0])
-            joint = pydart.constraints.BallJointConstraint(bd1, bd2, jointPos)
-            joint.add_to_world(world)
             self.worldPool.put(world)
 
 
@@ -66,9 +56,17 @@ def setBoundary(length, joint_max_l, joint_max_u, joint_min_l, joint_min_u, phi_
 
 def episode():
     global currentWorld
-    while currentWorld.t < DURATION:
+    terminalFlag = False
+    while currentWorld.t < DURATION and not terminalFlag:
         currentWorld.step()
+        curr_q = currentWorld.skeletons[0].q
+        if np.isnan(curr_q).any():
+            terminalFlag = True
+            print("NAN")
     res = currentWorld.skeletons[0].q
+    if terminalFlag:
+        for i in range(len(res)):
+            res[i] = 0
     return res
 
 
@@ -88,10 +86,14 @@ def general_fitness_func(specFitnessFunc, x):
 
 
 def straight_fitness_func(origin_q, final_q, root_joint_dof):
-    cost = - 3 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / abs(final_q[3] - origin_q[3]))
+    norm = abs(final_q[3] - origin_q[3])
+    if norm != 0:
+        cost = - 3 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / norm)
+    else:
+        cost = np.inf
     for i in range(root_joint_dof):
         if (i == 3): continue
-        cost += 6 * (final_q[i] - origin_q[i]) ** 2
+        cost += 2 * (final_q[i] - origin_q[i]) ** 2
     return cost
 
 
@@ -116,7 +118,7 @@ def restraintRadians(rad):
 
 
 def runCMA(x0, pool, processCnt):
-    es = cma.CMAEvolutionStrategy(x0, 0.7
+    es = cma.CMAEvolutionStrategy(x0, 1
                                   , OPTIONS)
     while not es.stop():
         X = es.ask()
@@ -148,17 +150,13 @@ if __name__ == '__main__':
 
     testWorld = simplesimulation.MyWorld(DIRECTORY, CONTROLLER)
 
-
-
-
-
     joint_max = testWorld.controller.joint_max
     joint_min = testWorld.controller.joint_min
     phi = testWorld.controller.phi
 
     x0 = np.concatenate((joint_max, joint_min, phi))
 
-    lb, hb = setBoundary(len(x0), 0, np.pi / 3, -np.pi / 3, 0, -np.pi, np.pi)
+    lb, hb = setBoundary(len(x0), 0, np.pi/2, -np.pi/2, 0, -np.pi, np.pi)
     OPTIONS['boundary_handling'] = cma.BoundPenalty
     OPTIONS['bounds'] = [lb, hb]
 

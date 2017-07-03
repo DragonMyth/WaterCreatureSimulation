@@ -10,9 +10,9 @@ turtle_directory = './skeletons/SimpleTurtle.skel'
 flat_creature_directory = './skeletons/FlatShapeCreature.skel'
 constraint_test_directory = './skeletons/JointConstraintsTestModel.skel'
 
+
 DIRECTORY = constraint_test_directory
 CONTROLLER = creaturecontrollers.ConstraintTestModelController
-CONSTRAINTS = None
 boxNormals = {
     'up': [0, 1, 0],
     'down': [0, -1, 0],
@@ -27,23 +27,11 @@ class MyWorld(pydart.World):
         pydart.World.__init__(self, 1.0 / 2000.0, skel_directory)
         self.forceVisual = forceVisual
         self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
-        self.controller = controller(self.skeletons[0],self.dt)
+
+        #dt is the time difference. Here we set it to 1/100 s
+        self.controller = controller(self.skeletons[0],1.0/100,self)
         ##Set values to the params in the controller
         self.skeletons[0].set_controller(self.controller)
-
-        skel = self.skeletons[0]
-        q=skel.q
-        q[6] = np.pi/3*1.8
-        q[7] = -np.pi/3*1.8
-        skel.set_positions(q)
-        bd1 = skel.bodynodes[0]
-        bd2 = skel.bodynodes[2]
-        jointPos = np.array([-np.sqrt(3)/2*0.2,0,0])
-        joint = pydart.constraints.BallJointConstraint(bd1,bd2,jointPos)
-        # joint.add_to_world(self)
-
-        if CONSTRAINTS is not None:
-            CONSTRAINTS(self.skeletons[0])
 
     def step(self, ):
         for i in range(len(self.skeletons[0].bodynodes)):
@@ -52,6 +40,13 @@ class MyWorld(pydart.World):
         super(MyWorld, self).step()
 
     def render_with_ri(self, ri):
+        ri.set_color(0.2, 1.0, 0.6)
+
+        p1 = np.array([-0.20,0,0])
+        p2 = np.array([-0.21,0,0])
+        ri.render_arrow(p1,p2,r_base=0.03, head_width=0.03, head_len=0.1)
+
+
         if self.forceVisual:
             for i in range(len(self.skeletons[0].bodynodes)):
                 p0 = self.skeletons[0].bodynodes[i].C
@@ -114,5 +109,4 @@ if __name__ == '__main__':
     pydart.init()
 
     world = MyWorld(DIRECTORY, CONTROLLER)
-    creatureParamSettings.loopCreatureParam(world.controller)
     pydart.gui.viewer.launch_pyqt5(world)

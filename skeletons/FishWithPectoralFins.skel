@@ -91,8 +91,7 @@
                     </geometry>
                 </collision_shape>
             </body>
-            <joint name="main_joint" type="planar">
-                <plane type="zx"/>
+            <joint name="main_joint" type="free">
                 <parent>world</parent>
                 <child>trunk</child>
             </joint>

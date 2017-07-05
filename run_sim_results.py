@@ -1,7 +1,7 @@
-import simplesimulation
+import creature_simulators
 import pydart2 as pydart
 import numpy as np
-import creaturecontrollers
+import creature_controllers
 
 fish_with_caudal_directory = './skeletons/SimpleFishWithCaudalFin.skel'
 fish_with_pectoral_directory = './skeletons/FishWithPectoralFins.skel'
@@ -35,7 +35,7 @@ def restraintRadians(rad):
 def eelMultiResultsenario():
     pydart.init()
 
-    testWorld = simplesimulation.MyWorld(eel_directory, creaturecontrollers.EelController)
+    testWorld = creature_simulators.SimpleEelSimulator()
     # res = np.array([0.865800698946, -0.194346939603, 0.197102257761, 1.0594520005, 0.0, -1.13235956076,
     #                 0.833331413606, -0.334648774595, -0.0214682856467, 0.162269855443, -0.52118503726, -0.984741673114,
     #                 0.572946877556, 0.0, 0.224657728364, 0.558109311755, 0.0, -0.407858856304, 0.0, -0.00887840121136,
@@ -113,7 +113,7 @@ def eelMultiResultsenario():
 
 def turtleFrontLimpTrack():
     pydart.init()
-    testWorld = simplesimulation.MyWorld(turtle_directory, creaturecontrollers.TurtleController)
+    testWorld = creature_simulators.SimpleSeaTurtleSimulator()
     testWorld.reset()
     res = np.array(
         [0.0, -0.7078904102036592, 1.0418840941151293, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10663599329888622, 1.0471975511965976,
@@ -135,21 +135,35 @@ def turtleFrontLimpTrack():
 
 def turtleTest():
     pydart.init()
-    testWorld = simplesimulation.MyWorld(turtle_directory, creaturecontrollers.TurtleController)
+    testWorld = creature_simulators.SimpleSeaTurtleSimulator()
     testWorld.reset()
     res = np.array(
         [1.5707963267948966, -0.3308522849896008, 0.18453346454873287, 1.5707963267948966, 0.0, 0.0, 0.0, 0.0,
          -2.070887352096422, 0.5078136968877673, 0.0, 0.8994943601154446, 0.0, 0.0, 0.0, 0.0, -1.038568025388365,
          -0.13477440819880682, 1.2907824168398736, 0.0, 0.0, 0.0, 0.0, 0.0])
     res = np.array(
-        [1.5707963267948966, 1.0095585670385643, 1.5707963267948966, 0.0, 0.0, 0.0, 0.0, 0.0, -1.5707963267948966,
-         -0.774555033111664, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.0, 0.32777858472716653,
-         -1.2333230315268144, 1.3946801591988949, -0.1137989252836355, 0.0, 0.0, 0.0, 0.0])
+        [1.5707963267948966, 0.9961768713996245, 1.5707963267948966, 0.0, 0.0, 0.0, 0.0, 0.0, -1.5707963267948966,
+         -0.7521668135857681, -1.5707963267948966, -1.5707963267948966, 0.0, 0.0, 0.0, 0.0, 0.7209630882534658,
+         -0.84154544186923, 1.8160795318017378, 0.285419779891251, 0.0, 0.0, 0.0, 0.0])
+    parse_param_for_optimization(res, testWorld.controller)
+    pydart.gui.viewer.launch_pyqt5(testWorld)
+
+
+def flatwormTest():
+    pydart.init()
+    testWorld = creature_simulators.SimpleFlatWormSimulator()
+    testWorld.reset()
+    res = np.array(
+        [1.50825074333, 0.0, 0.0, 0.0, 0.0, 0.991302956432, -1.57079632679, 0.0, -1.57079632679, 0.0, -0.328836265343,
+         -0.0220655793718, 0.846202351287, 0.339166118298, -0.0198064287278, -0.753895114876, -0.972401462742,
+         0.835915526885
+         ])
     parse_param_for_optimization(res, testWorld.controller)
     pydart.gui.viewer.launch_pyqt5(testWorld)
 
 
 if __name__ == '__main__':
-    eelMultiResultsenario()
+    # eelMultiResultsenario()
     # turtleFrontLimpTrack()
     # turtleTest()
+    flatwormTest()

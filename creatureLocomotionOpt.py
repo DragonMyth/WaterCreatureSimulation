@@ -8,16 +8,16 @@ import multiprocessing as mp
 from functools import partial
 import threading
 
-general_option = {'maxiter': 100, 'popsize': 30, 'tolx': 1e-4, 'tolfun': 1e-1}
-turtle_straight_option = {'maxiter': 80, 'popsize': 30,
+general_option = {'maxiter': 30, 'popsize': 40}
+turtle_straight_option = {'maxiter': 100, 'popsize': 30,
                           'fixed_variables': {4: 0, 5: 0, 6: 0, 7: 0, 12: 0, 13: 0, 14: 0, 15: 0, 20: 0, 21: 0,
                                               22: 0, 23: 0}}
 
-DURATION = 1.5
-SIMULATOR = creature_simulators.SimpleEelSimulator
+DURATION = 0.5
+SIMULATOR = creature_simulators.SimpleFlatWormSimulator
 OPTIONS = general_option
+CMA_STEP_SIZE = 0.7
 NUM_RESTART = 1
-
 
 class SimulatorPool(object):
     def __init__(self, population):
@@ -25,8 +25,6 @@ class SimulatorPool(object):
         for _ in range(population):
             simulator = SIMULATOR()
             self.simulatorPool.put(simulator)
-
-
 def _init(queue):
     global current_simulator
     current_simulator = queue.get()
@@ -86,7 +84,7 @@ def straight_fitness_func(origin_q, final_q, root_joint_dof):
         cost = np.inf
     for i in range(root_joint_dof):
         if i == 3: continue
-        cost += 2 * (final_q[i] - origin_q[i]) ** 2
+        cost += 5 * (final_q[i] - origin_q[i]) ** 2
     return cost
 
 
@@ -103,7 +101,7 @@ def parse_param_for_optimization(x, controller):
 
 
 def run_CMA(x0, pool, processCnt):
-    es = cma.CMAEvolutionStrategy(x0, 1
+    es = cma.CMAEvolutionStrategy(x0, CMA_STEP_SIZE
                                   , OPTIONS)
     while not es.stop():
         X = es.ask()

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import numpy as np
-import testSimResults
+import run_sim_results
 
 def initData(filename):
     res = []
@@ -46,7 +46,7 @@ def plot3dPhi(phi_list):
 
     plt.show()
 def plotTurtleLimpT():
-    taus,T = testSimResults.turtleFrontLimpTrack()
+    taus,T = run_sim_results.turtleFrontLimpTrack()
 
     fig, ax = plt.subplots(1,1,figsize=(10,10),subplot_kw={'projection':'3d'})
 

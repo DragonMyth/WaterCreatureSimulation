@@ -3,6 +3,7 @@ import numpy as np
 import creature_controllers
 import creatureParamSettings
 import jointconstraints as constraints
+from sklearn.preprocessing import normalize
 
 BOXNORMALS = {
     'up': [0, 1, 0],
@@ -24,7 +25,7 @@ class BaseFluidSimulator(pydart.World):
         for i in range(len(self.skeletons[0].bodynodes)):
             self.forces[i] = self.calcFluidForce(self.skeletons[0].bodynodes[i])
             self.skeletons[0].bodynodes[i].add_ext_force(self.forces[i])
-            super(BaseFluidSimulator, self).step()
+        super(BaseFluidSimulator, self).step()
 
     def calcFluidForce(self, bodynode):
         dq = self.skeletons[0].dq
@@ -90,7 +91,7 @@ class SimpleFishWithCaudalFinSimulator(BaseFluidSimulator):
     def __init__(self, ):
         BaseFluidSimulator.__init__(self, './skeletons/SimpleFishWithCaudalFin.skel')
         # dt is the time difference. Here we set it to 1/100 s
-        self.controller = creature_controllers.CaudalFinFishController(self.skeletons[0], 1.0 / 100, self)
+        self.controller = creature_controllers.CaudalFinFishController(self.skeletons[0], 1.0 / 100)
         self.skeletons[0].set_controller(self.controller)
 
 
@@ -98,7 +99,7 @@ class SimpleFishWithPectoralFinSimulator(BaseFluidSimulator):
     def __init__(self, ):
         BaseFluidSimulator.__init__(self, './skeletons/FishWithPectoralFins.skel')
         # dt is the time difference. Here we set it to 1/100 s
-        self.controller = creature_controllers.PectoralFinFishController(self.skeletons[0], 1.0 / 100, self)
+        self.controller = creature_controllers.PectoralFinFishController(self.skeletons[0], 1.0 / 100)
         self.skeletons[0].set_controller(self.controller)
 
 
@@ -106,7 +107,7 @@ class SimpleEelSimulator(BaseFluidSimulator):
     def __init__(self, ):
         BaseFluidSimulator.__init__(self, './skeletons/SimpleEel.skel')
         # dt is the time difference. Here we set it to 1/100 s
-        self.controller = creature_controllers.EelController(self.skeletons[0], 1.0 / 100, self)
+        self.controller = creature_controllers.EelController(self.skeletons[0], 1.0 / 100)
         self.skeletons[0].set_controller(self.controller)
 
 
@@ -114,12 +115,120 @@ class SimpleSeaTurtleSimulator(BaseFluidSimulator):
     def __init__(self, ):
         BaseFluidSimulator.__init__(self, './skeletons/SimpleTurtle.skel')
         # dt is the time difference. Here we set it to 1/100 s
-        self.controller = creature_controllers.TurtleController(self.skeletons[0], 1.0 / 100, self)
+        self.controller = creature_controllers.TurtleController(self.skeletons[0], 1.0 / 100)
         self.skeletons[0].set_controller(self.controller)
 
 
+class SimpleFlatWormSimulator(BaseFluidSimulator):
+    def __init__(self, ):
+        BaseFluidSimulator.__init__(self, './skeletons/SimplifiedFlatWorm.skel')
+        # dt is the time difference. Here we set it to 1/100 s
+        self.controller = creature_controllers.SimplifiedFlatwormController(self.skeletons[0], 1.0 / 100)
+        self.skeletons[0].set_controller(self.controller)
+
+    def step(self):
+        bodynodes_dict = self.construct_skel_dict()
+        comb = []
+        import itertools
+        for i in itertools.product(['l', 'r'], [1]):
+            comb.append(i)
+        for segIdx in range(2):
+            for side, idx in comb:
+                offset1_dir = np.array([-1, 0, 0])
+                offset2_dir = np.array([1, 0, 0])
+                curr_key = 'wing_' + str(side) + '_' + str(segIdx) + str(idx)
+                next_key = 'wing_' + str(side) + '_' + str(segIdx + 1) + str(idx)
+                curr_body = bodynodes_dict[curr_key]
+                next_body = bodynodes_dict[next_key]
+
+                constraint_force, offset1, offset2 = self.calc_constraint_force(curr_body, offset1_dir, next_body,
+                                                                                offset2_dir, strength=100)
+
+                curr_body.add_ext_force(constraint_force, _offset=offset1)
+                next_body.add_ext_force(-constraint_force, _offset=offset2)
+        super(SimpleFlatWormSimulator, self).step()
+
+
+    def calc_constraint_force(self, bodynode1, offset1_dir, bodynode2, offset2_dir, strength=1.0):
+
+        shape1 = bodynode1.shapenodes[0]
+        body1_geometry = shape1.shape.size()
+        shape2 = bodynode2.shapenodes[0]
+        body2_geometry = shape2.shape.size()
+
+        offset1 = offset1_dir * body1_geometry / 2
+        offset2 = offset2_dir * body2_geometry / 2
+
+        body1_link_pos_to_world = bodynode1.to_world(offset1)
+        body2_link_pos_to_world = bodynode2.to_world(offset2)
+        constraint_force_dir = body2_link_pos_to_world - body1_link_pos_to_world
+        constraint_force = constraint_force_dir * strength
+        return constraint_force, offset1, offset2
+
+    def construct_skel_dict(self):
+        node_dict = {}
+        bodynodes = self.skeletons[0].bodynodes
+        for i in range(len(bodynodes)):
+            node_dict[bodynodes[i].name] = bodynodes[i]
+        return node_dict
+
+class FlatWormSimulator(BaseFluidSimulator):
+    def __init__(self, ):
+        BaseFluidSimulator.__init__(self, './skeletons/FlatWorm.skel')
+        # dt is the time difference. Here we set it to 1/100 s
+        self.controller = creature_controllers.FlatwormController(self.skeletons[0], 1.0 / 100)
+        self.skeletons[0].set_controller(self.controller)
+        # self.constraint_force = []
+
+    def step(self):
+        bodynodes_dict = self.construct_skel_dict()
+        comb = []
+        import itertools
+        for i in itertools.product(['l', 'r'], [1,2,3]):
+            comb.append(i)
+        for segIdx in range(5):
+            for side, idx in comb:
+                offset1_dir = np.array([-1, 0, 0])
+                offset2_dir = np.array([1, 0, 0])
+                curr_key = 'wing_' + str(side) + '_' + str(segIdx) + str(idx)
+                next_key = 'wing_' + str(side) + '_' + str(segIdx + 1) + str(idx)
+                curr_body = bodynodes_dict[curr_key]
+                next_body = bodynodes_dict[next_key]
+
+                constraint_force, offset1, offset2 = self.calc_constraint_force(curr_body, offset1_dir, next_body,
+                                                                                offset2_dir, strength=5)
+
+                curr_body.add_ext_force(constraint_force, _offset=offset1)
+                next_body.add_ext_force(-constraint_force, _offset=offset2)
+        super(FlatWormSimulator, self).step()
+
+
+    def calc_constraint_force(self, bodynode1, offset1_dir, bodynode2, offset2_dir, strength=1.0):
+
+        shape1 = bodynode1.shapenodes[0]
+        body1_geometry = shape1.shape.size()
+        shape2 = bodynode2.shapenodes[0]
+        body2_geometry = shape2.shape.size()
+
+        offset1 = offset1_dir * body1_geometry / 2
+        offset2 = offset2_dir * body2_geometry / 2
+
+        body1_link_pos_to_world = bodynode1.to_world(offset1)
+        body2_link_pos_to_world = bodynode2.to_world(offset2)
+        constraint_force_dir = body2_link_pos_to_world - body1_link_pos_to_world
+        constraint_force = constraint_force_dir * strength
+        return constraint_force, offset1, offset2
+
+    def construct_skel_dict(self):
+        node_dict = {}
+        bodynodes = self.skeletons[0].bodynodes
+        for i in range(len(bodynodes)):
+            node_dict[bodynodes[i].name] = bodynodes[i]
+        return node_dict
 if __name__ == '__main__':
     pydart.init()
 
-    simulator = SimpleEelSimulator()
+    simulator = SimpleFlatWormSimulator()
+    # simulator.debug = True
+    creatureParamSettings.testFlatCreatureParam(simulator.controller)
     pydart.gui.viewer.launch_pyqt5(simulator)

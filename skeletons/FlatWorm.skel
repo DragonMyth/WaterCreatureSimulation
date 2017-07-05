@@ -957,7 +957,7 @@
             <joint name="wing_r_01_joint" type="universal">
                 <transformation>0 0 -0.1 0 0 0</transformation>
                 <axis>
-                    <xyz>1 0 0</xyz>
+                    <xyz>1 0 0</xyz> 
                 </axis>
                 <axis2>
                     <xyz>0 0 1</xyz>

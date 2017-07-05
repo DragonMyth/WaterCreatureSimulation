@@ -24,5 +24,4 @@ def construct_skel_dict(skel):
     bodynodes = skel.bodynodes
     for i in range(len(bodynodes)):
         node_dict[bodynodes[i].name] = bodynodes[i]
-
     return node_dict

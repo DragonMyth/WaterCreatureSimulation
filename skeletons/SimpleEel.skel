@@ -11,7 +11,7 @@
             <body name="head">
                 <transformation>0.5 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.01</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -32,7 +32,7 @@
             <body name="segment_1">
                 <transformation>0.3 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -53,7 +53,7 @@
             <body name="segment_2">
                 <transformation>0.1 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -74,7 +74,7 @@
             <body name="segment_3">
                 <transformation>-0.1 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -95,7 +95,7 @@
             <body name="segment_4">
                 <transformation>-0.3 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>
@@ -116,7 +116,7 @@
             <body name="segment_5">
                 <transformation>-0.5 0 0 0 0 0</transformation>
                 <inertia>
-                    <mass>0.0002</mass>
+                    <mass>0.0006</mass>
                 </inertia>
                 <visualization_shape>
                     <geometry>

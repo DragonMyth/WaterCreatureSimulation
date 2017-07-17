@@ -7,7 +7,7 @@
             <collision_detector>dart</collision_detector>
         </physics>
         <skeleton name="skeleton">
-            <transformation>-1 0 0 0 0 0</transformation>
+            <transformation>0 0 0 0 0 0</transformation>
             <body name="torso">
                 <transformation>0 0 0 0 0 0</transformation>
                 <inertia>

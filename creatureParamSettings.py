@@ -56,6 +56,16 @@ def simpleTurtleParam(controller):
     controller.phi[2] += np.pi
     controller.phi[6] += np.pi
 
+def turtleCircParam(controller):
+    controller.joint_max[:] = np.pi / 6
+    controller.joint_min[:] = -np.pi / 6
+
+    controller.joint_max[4] = np.pi
+    controller.joint_min[4] = -np.pi
+    controller.joint_max[5] = np.pi
+    controller.joint_min[5] = -np.pi
+
+
 
 def testFlatCreatureParam(controller):
     controller.joint_max[:] = 0
@@ -68,12 +78,14 @@ def testFlatCreatureParam(controller):
 
 def FlatCreatureParam(controller):
     controller.joint_max[:] = 0
-    controller.joint_max[5:11] = np.pi / 6
+    controller.joint_max[0:6] = np.pi / 12
+    controller.joint_max[6:12] =-np.pi / 12
+    controller.joint_max[12:18] =np.pi / 12
 
     controller.joint_min[:] = 0
-    controller.joint_min[5:11] = -np.pi / 6
-
-
+    controller.joint_min[0:6] = -np.pi / 12
+    controller.joint_min[6:12] = np.pi / 12
+    controller.joint_min[12:18] = -np.pi / 12
 def loopCreatureParam(controller):
     controller.joint_max[2] = -np.pi / 2
     controller.joint_min[2] = np.pi / 2

@@ -2,9 +2,8 @@ import pydart2 as pydart
 import numpy as np
 import creature_controllers
 import creatureParamSettings
-import jointconstraints as constraints
 from sklearn.preprocessing import normalize
-
+from pydart2.gui import trackball
 BOXNORMALS = {
     'up': [0, 1, 0],
     'down': [0, -1, 0],
@@ -19,14 +18,24 @@ class BaseFluidSimulator(pydart.World):
     def __init__(self, skel_path):
         super(BaseFluidSimulator, self).__init__(1.0 / 2000.0, skel_path=skel_path)
         self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
+        self.trail = [[],[],[],[],[],[]]
         self.debug = False
 
     def step(self, ):
+        if((self.t*2000)%100<=5):
+            c = self.skeletons[0].C
+            self.trail[0].append(c[0])
+            self.trail[1].append(c[1])
+            self.trail[2].append(c[2])
+
         for i in range(len(self.skeletons[0].bodynodes)):
             self.forces[i] = self.calcFluidForce(self.skeletons[0].bodynodes[i])
             self.skeletons[0].bodynodes[i].add_ext_force(self.forces[i])
         super(BaseFluidSimulator, self).step()
-
+    def reset(self):
+        self.trail = [[], [], []]
+        self.forces = np.zeros((len(self.skeletons[0].bodynodes), 3))
+        super(BaseFluidSimulator,self).reset()
     def calcFluidForce(self, bodynode):
         dq = self.skeletons[0].dq
 
@@ -79,6 +88,20 @@ class BaseFluidSimulator(pydart.World):
 
     def render_with_ri(self, ri):
         ri.set_color(0.2, 1.0, 0.6)
+
+        po = self.skeletons[0].C
+        out = np.array(BOXNORMALS['outward'])
+        pd = self.skeletons[0].bodynodes[0].to_world(out*1.5)
+        ri.render_arrow(po, pd, r_base=0.003, head_width=0.003, head_len=0.1)
+        trail_len = len(self.trail[0])
+        i = trail_len-1
+        while i>0  and trail_len-i<1400:
+
+            p0 = np.array([self.trail[0][i-1],self.trail[1][i-1],self.trail[2][i-1]])
+            p1 = np.array([self.trail[0][i],self.trail[1][i],self.trail[2][i]])
+            ri.render_line(p0,p1)
+            i-=1
+
         if self.debug:
             for i in range(len(self.skeletons[0].bodynodes)):
                 p0 = self.skeletons[0].bodynodes[i].C
@@ -117,7 +140,12 @@ class SimpleSeaTurtleSimulator(BaseFluidSimulator):
         # dt is the time difference. Here we set it to 1/100 s
         self.controller = creature_controllers.TurtleController(self.skeletons[0], 1.0 / 100)
         self.skeletons[0].set_controller(self.controller)
-
+class TurtleCircSimulator(BaseFluidSimulator):
+    def __init__(self):
+        BaseFluidSimulator.__init__(self, './skeletons/SimpleTurtle.skel')
+        # dt is the time difference. Here we set it to 1/100 s
+        self.controller = creature_controllers.TurtleCircController(self.skeletons[0], 1.0 / 100)
+        self.skeletons[0].set_controller(self.controller)
 
 class SimpleFlatWormSimulator(BaseFluidSimulator):
     def __init__(self, ):
@@ -225,10 +253,68 @@ class FlatWormSimulator(BaseFluidSimulator):
         for i in range(len(bodynodes)):
             node_dict[bodynodes[i].name] = bodynodes[i]
         return node_dict
+
+class FlatWormHardBackboneSimulator(BaseFluidSimulator):
+    def __init__(self, ):
+        BaseFluidSimulator.__init__(self, './skeletons/FlatWormHardBackbone.skel')
+        # dt is the time difference. Here we set it to 1/100 s
+        self.controller = creature_controllers.FlatwormHardBackboneController(self.skeletons[0], 1.0 / 100)
+        self.skeletons[0].set_controller(self.controller)
+        # self.constraint_force = []
+
+    def step(self):
+        bodynodes_dict = self.construct_skel_dict()
+        comb = []
+        import itertools
+        for i in itertools.product(['l', 'r'], [1,2,3]):
+            comb.append(i)
+        for segIdx in range(5):
+            for side, idx in comb:
+                offset1_dir = np.array([-1, 0, 0])
+                offset2_dir = np.array([1, 0, 0])
+                curr_key = 'wing_' + str(side) + '_' + str(segIdx) + str(idx)
+                next_key = 'wing_' + str(side) + '_' + str(segIdx + 1) + str(idx)
+                curr_body = bodynodes_dict[curr_key]
+                next_body = bodynodes_dict[next_key]
+
+                constraint_force, offset1, offset2 = self.calc_constraint_force(curr_body, offset1_dir, next_body,
+                                                                                offset2_dir, strength=5)
+
+                curr_body.add_ext_force(constraint_force, _offset=offset1)
+                next_body.add_ext_force(-constraint_force, _offset=offset2)
+        super(FlatWormHardBackboneSimulator, self).step()
+
+
+    def calc_constraint_force(self, bodynode1, offset1_dir, bodynode2, offset2_dir, strength=1.0):
+
+        shape1 = bodynode1.shapenodes[0]
+        body1_geometry = shape1.shape.size()
+        shape2 = bodynode2.shapenodes[0]
+        body2_geometry = shape2.shape.size()
+
+        offset1 = offset1_dir * body1_geometry / 2
+        offset2 = offset2_dir * body2_geometry / 2
+
+        body1_link_pos_to_world = bodynode1.to_world(offset1)
+        body2_link_pos_to_world = bodynode2.to_world(offset2)
+        constraint_force_dir = body2_link_pos_to_world - body1_link_pos_to_world
+        constraint_force = constraint_force_dir * strength
+        return constraint_force, offset1, offset2
+
+    def construct_skel_dict(self):
+        node_dict = {}
+        bodynodes = self.skeletons[0].bodynodes
+        for i in range(len(bodynodes)):
+            node_dict[bodynodes[i].name] = bodynodes[i]
+        return node_dict
 if __name__ == '__main__':
     pydart.init()
 
-    simulator = SimpleFlatWormSimulator()
+    simulator = TurtleCircSimulator()
     # simulator.debug = True
-    creatureParamSettings.testFlatCreatureParam(simulator.controller)
+    # creatureParamSettings.turtleCircParam(simulator.controller)
+    # while simulator.t < 0.5:
+    #     simulator.step()
+    #
+    # camera = trackball.Trackball()
     pydart.gui.viewer.launch_pyqt5(simulator)

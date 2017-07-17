@@ -2,22 +2,20 @@ import creature_simulators
 import pydart2 as pydart
 import cma
 import numpy as np
-import creature_controllers
-
+from utils import least_square_circle
+import copy
 import multiprocessing as mp
 from functools import partial
-import threading
 
-general_option = {'maxiter': 30, 'popsize': 40}
-turtle_straight_option = {'maxiter': 100, 'popsize': 30,
-                          'fixed_variables': {4: 0, 5: 0, 6: 0, 7: 0, 12: 0, 13: 0, 14: 0, 15: 0, 20: 0, 21: 0,
-                                              22: 0, 23: 0}}
+general_option = {'maxiter': 70, 'popsize': 35}
 
-DURATION = 0.5
-SIMULATOR = creature_simulators.SimpleFlatWormSimulator
+DURATION = 5
+SIMULATOR = creature_simulators.TurtleCircSimulator
 OPTIONS = general_option
-CMA_STEP_SIZE = 0.7
+CMA_STEP_SIZE = 0.6
 NUM_RESTART = 1
+
+
 
 class SimulatorPool(object):
     def __init__(self, population):
@@ -25,6 +23,8 @@ class SimulatorPool(object):
         for _ in range(population):
             simulator = SIMULATOR()
             self.simulatorPool.put(simulator)
+
+
 def _init(queue):
     global current_simulator
     current_simulator = queue.get()
@@ -51,32 +51,51 @@ def episode():
     while current_simulator.t < DURATION and not terminal_flag:
         current_simulator.step()
         curr_q = current_simulator.skeletons[0].q
-        if np.isnan(curr_q).any():
+        if curr_q.any() > 10 ** 3:
+            print(curr_q)
+            print(current_simulator.skeletons[0].controller.compute())
+            print(current_simulator.skeletons[0].controller.pd_controller_target_compute())
             terminal_flag = True
             print("NAN")
     res = current_simulator.skeletons[0].q
     if terminal_flag:
-        for i in range(len(res)):
-            res[i] = 0
+        res = -1
     return res
 
 
 def general_fitness_func(spec_fitness_func, x):
     # Set the parameter for this model
     global current_simulator
+    origin_q = current_simulator.skeletons[0].q
     parse_param_for_optimization(x, current_simulator.controller)
 
-    origin_q = current_simulator.skeletons[0].q
-
     final_q = episode()
-    current_simulator.reset()
-    root_joint_dof = len(current_simulator.skeletons[0].joints[0].dofs)
+    if type(final_q) != int:
+        trail = copy.deepcopy(current_simulator.trail)
+        current_simulator.reset()
+        root_joint_dof = len(current_simulator.skeletons[0].joints[0].dofs)
 
-    res = spec_fitness_func(origin_q, final_q, root_joint_dof)
+        res = spec_fitness_func(origin_q, final_q, root_joint_dof, trail)
+    else:
+        res = 10
     return res
 
 
-def straight_fitness_func(origin_q, final_q, root_joint_dof):
+def circular_fitness_func(origin_q, final_q, root_joint_dof, head_trail):
+    target_radius = 1.5
+    X = np.array(head_trail[0])
+    Y = np.array(head_trail[2])
+    xc, yc, radius = least_square_circle(X, Y)
+
+    distance = 0
+    for i in range(1, len(X)):
+        distance += np.sqrt((X[i] - X[i - 1]) ** 2 + (Y[i] - Y[i - 1]) ** 2)
+    w0 = 20
+    w1 = 3
+    return w0 * (((radius - target_radius) ** 2) / (1.5 ** 2)) - w1 * distance
+
+
+def straight_fitness_func(origin_q, final_q, root_joint_dof, trail):
     norm = abs(final_q[3] - origin_q[3])
     if norm != 0:
         cost = - 3 * (final_q[3] - origin_q[3]) ** 2 * ((final_q[3] - origin_q[3]) / norm)
@@ -105,7 +124,7 @@ def run_CMA(x0, pool, processCnt):
                                   , OPTIONS)
     while not es.stop():
         X = es.ask()
-        partial_fitness = partial(general_fitness_func, straight_fitness_func)
+        partial_fitness = partial(general_fitness_func, FITNESS_FUNC)
         fit = []
         for i in range(int(np.ceil(es.popsize / processCnt)) + 1):
             if (len(X[i * processCnt:]) < processCnt):
@@ -128,6 +147,8 @@ def writeOptimaToFile(optima):
     exportFile.close()
 
 
+FITNESS_FUNC = circular_fitness_func
+
 if __name__ == '__main__':
     pydart.init()
 
@@ -139,8 +160,8 @@ if __name__ == '__main__':
 
     x0 = np.concatenate((joint_max, joint_min, phi))
 
-    lb, hb = setBoundary(len(x0), 0, np.pi / 2, -np.pi / 2, 0, -np.pi, np.pi)
-    OPTIONS['boundary_handling'] = cma.BoundPenalty
+    lb, hb = setBoundary(len(x0), 0, np.pi / 3, -np.pi / 3, 0, -np.pi, np.pi)
+    OPTIONS['boundary_handling'] = cma.BoundTransform
     OPTIONS['bounds'] = [lb, hb]
 
     allRes = []
